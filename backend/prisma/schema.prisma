@@ -1,0 +1,361 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum EstadoUsuario {
+  Activo
+  Inactivo
+}
+
+enum EstadoCliente {
+  Activo
+  Inactivo
+}
+
+enum EstadoAsunto {
+  Activo
+  Inactivo
+  Cerrado
+}
+
+enum EstadoTiempo {
+  Activo
+  Aprobado
+  Facturado
+  FacturadoPagado
+}
+
+enum EstadoJob {
+  Activo
+  Cerrado
+  Pausado
+}
+
+enum EstadoDocumento {
+  Borrador
+  Emitido
+  Pagado
+  Anulado
+}
+
+enum EstadoPago {
+  Pendiente
+  Aplicado
+}
+
+enum TipoDocumento {
+  CC
+  NIT
+  Pasaporte
+  RUT
+  CE
+  Otro
+}
+
+enum TipoDocumentoFacturacion {
+  Factura
+  NotaDebito
+  NotaCredito
+  Recibo
+  Otro
+}
+
+enum TipoFacturacion {
+  PorHoras
+  PorHorasConMontoEditable
+  PorHitosOEtapas
+  MontoFijoMensual
+}
+
+enum Moneda {
+  COP
+  USD
+  EUR
+}
+
+enum Importancia {
+  Baja
+  Media
+  Alta
+}
+
+enum TipoAusencia {
+  Vacaciones
+  Permiso
+  Incapacidad
+  Otro
+}
+
+// ─── Config tables ───────────────────────────────────────────────────────────
+
+model roles {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique @db.VarChar(255)
+  permisos  Json     @default("{}")
+  usuarios  usuarios[]
+}
+
+model categorias_usuario {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique @db.VarChar(255)
+  usuarios  usuarios[]
+  tarifas_horarias tarifas_horarias[]
+}
+
+model areas_practica {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique @db.VarChar(255)
+  usuarios  usuarios[]
+  asuntos   asuntos[]
+}
+
+model grupos_empresariales {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @unique @db.VarChar(255)
+  clientes  clientes[]
+}
+
+model grupos_facturacion {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @unique @db.VarChar(255)
+  asuntos   asuntos[]
+}
+
+model impuestos {
+  id                     Int                       @id @default(autoincrement())
+  nombre                 String                    @unique @db.VarChar(255)
+  porcentaje             Decimal                   @db.Decimal(5, 2)
+  documentos_facturacion documentos_facturacion[]
+}
+
+model gravamenes {
+  id                     Int                       @id @default(autoincrement())
+  nombre                 String                    @unique @db.VarChar(255)
+  valor                  Decimal                   @db.Decimal(10, 2)
+  documentos_facturacion documentos_facturacion[]
+}
+
+model tasas_cambio {
+  id                     Int                       @id @default(autoincrement())
+  moneda_origen          Moneda
+  moneda_destino         Moneda
+  tasa                   Decimal                   @db.Decimal(15, 6)
+  fecha_vigencia         DateTime
+  documentos_facturacion documentos_facturacion[]
+}
+
+model periodos_facturacion {
+  id           Int      @id @default(autoincrement())
+  nombre       String   @db.VarChar(255)
+  fecha_inicio DateTime @db.Date
+  fecha_fin    DateTime @db.Date
+}
+
+// ─── Core entities ───────────────────────────────────────────────────────────
+
+model usuarios {
+  id                Int                @id @default(autoincrement())
+  nombre            String             @db.VarChar(255)
+  email             String             @unique @db.VarChar(255)
+  password_hash     String             @db.VarChar(255)
+  categoria_id      Int?
+  rol_id            Int?
+  area_practica_id  Int?
+  tarifa_horaria    Decimal?           @db.Decimal(10, 2)
+  estado            EstadoUsuario      @default(Activo)
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+
+  categoria         categorias_usuario? @relation(fields: [categoria_id], references: [id])
+  rol               roles?              @relation(fields: [rol_id], references: [id])
+  area_practica     areas_practica?     @relation(fields: [area_practica_id], references: [id])
+
+  ausencias         ausencias[]
+  clientes_responsable  clientes[]   @relation("ClienteResponsable")
+  clientes_emisor       clientes[]   @relation("ClienteEmisor")
+  tiempos           tiempos[]        @relation("TiempoUsuario")
+  tiempos_compartidos tiempos[]      @relation("TiempoCompartido")
+  tareas            tareas[]
+  jobs              jobs[]
+  documentos_emitidos documentos_facturacion[]
+  tarifas_horarias  tarifas_horarias[]
+}
+
+model ausencias {
+  id           Int          @id @default(autoincrement())
+  usuario_id   Int
+  fecha_inicio DateTime     @db.Date
+  fecha_fin    DateTime     @db.Date
+  tipo         TipoAusencia
+  descripcion  String?      @db.Text
+
+  usuario      usuarios     @relation(fields: [usuario_id], references: [id])
+}
+
+model clientes {
+  id                      Int                    @id @default(autoincrement())
+  codigo                  String                 @unique @db.VarChar(10)
+  razon_social            String                 @db.VarChar(255)
+  nombre_comercial        String?                @db.VarChar(255)
+  tipo_documento          TipoDocumento?
+  numero_documento        String?                @db.VarChar(50)
+  pais                    String?                @db.VarChar(100)
+  ciudad                  String?                @db.VarChar(100)
+  sector                  String?                @db.VarChar(100)
+  tipo                    String?                @db.VarChar(100)
+  responsable_id          Int?
+  emisor_facturacion_id   Int?
+  grupo_empresarial_id    Int?
+  estado                  EstadoCliente          @default(Activo)
+  created_at              DateTime               @default(now())
+  updated_at              DateTime               @updatedAt
+
+  responsable             usuarios?              @relation("ClienteResponsable", fields: [responsable_id], references: [id])
+  emisor_facturacion      usuarios?              @relation("ClienteEmisor", fields: [emisor_facturacion_id], references: [id])
+  grupo_empresarial       grupos_empresariales?  @relation(fields: [grupo_empresarial_id], references: [id])
+
+  asuntos                 asuntos[]
+  tiempos                 tiempos[]
+  tareas                  tareas[]
+  jobs                    jobs[]
+  pagos                   pagos[]
+  documentos_facturacion  documentos_facturacion[]
+  tarifas_horarias        tarifas_horarias[]
+}
+
+model asuntos {
+  id                   Int             @id @default(autoincrement())
+  codigo               String          @unique @db.VarChar(20)
+  cliente_id           Int
+  nombre               String          @db.VarChar(255)
+  area_practica_id     Int?
+  tipo_facturacion     TipoFacturacion
+  moneda               Moneda          @default(COP)
+  monto_fijo           Decimal?        @db.Decimal(15, 2)
+  grupo_facturacion_id Int?
+  estado               EstadoAsunto    @default(Activo)
+  created_at           DateTime        @default(now())
+  updated_at           DateTime        @updatedAt
+
+  cliente              clientes        @relation(fields: [cliente_id], references: [id])
+  area_practica        areas_practica? @relation(fields: [area_practica_id], references: [id])
+  grupo_facturacion    grupos_facturacion? @relation(fields: [grupo_facturacion_id], references: [id])
+
+  tiempos              tiempos[]
+  tareas               tareas[]
+  documentos_facturacion documentos_facturacion[]
+}
+
+model tiempos {
+  id               Int          @id @default(autoincrement())
+  usuario_id       Int
+  cliente_id       Int
+  asunto_id        Int
+  actividad        String       @db.Text
+  fecha            DateTime     @db.Date
+  duracion_horas   Int          // stored in minutes
+  facturable       Boolean      @default(true)
+  compartido_con   Int?
+  estado           EstadoTiempo @default(Activo)
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  usuario          usuarios     @relation("TiempoUsuario", fields: [usuario_id], references: [id])
+  cliente          clientes     @relation(fields: [cliente_id], references: [id])
+  asunto           asuntos      @relation(fields: [asunto_id], references: [id])
+  compartido_usuario usuarios?  @relation("TiempoCompartido", fields: [compartido_con], references: [id])
+}
+
+model tareas {
+  id                 Int         @id @default(autoincrement())
+  titulo             String      @db.VarChar(255)
+  usuario_id         Int
+  cliente_id         Int
+  asunto_id          Int
+  detalles           String      @db.Text
+  fecha_inicio       DateTime?   @db.Date
+  fecha_vencimiento  DateTime?   @db.Date
+  importancia        Importancia?
+  estimado_minutos   Int         @default(0)
+  finalizada         Boolean     @default(false)
+  archivada          Boolean     @default(false)
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @updatedAt
+
+  usuario            usuarios    @relation(fields: [usuario_id], references: [id])
+  cliente            clientes    @relation(fields: [cliente_id], references: [id])
+  asunto             asuntos     @relation(fields: [asunto_id], references: [id])
+}
+
+model jobs {
+  id             Int       @id @default(autoincrement())
+  nombre         String    @db.VarChar(255)
+  responsable_id Int?
+  cliente_id     Int?
+  tipo           String?   @db.VarChar(100)
+  estado         EstadoJob @default(Activo)
+  created_at     DateTime  @default(now())
+
+  responsable    usuarios? @relation(fields: [responsable_id], references: [id])
+  cliente        clientes? @relation(fields: [cliente_id], references: [id])
+}
+
+model documentos_facturacion {
+  id                  Int                      @id @default(autoincrement())
+  tipo_documento      TipoDocumentoFacturacion
+  receptor_id         Int
+  emisor_id           Int?
+  asunto_id           Int?
+  rango_fecha_inicio  DateTime                 @db.Date
+  rango_fecha_fin     DateTime                 @db.Date
+  valor               Decimal                  @db.Decimal(15, 2)
+  moneda              Moneda                   @default(COP)
+  impuesto_id         Int?
+  gravamen_id         Int?
+  tasa_cambio_id      Int?
+  estado              EstadoDocumento          @default(Borrador)
+  created_at          DateTime                 @default(now())
+
+  receptor            clientes                 @relation(fields: [receptor_id], references: [id])
+  emisor              usuarios?                @relation(fields: [emisor_id], references: [id])
+  asunto              asuntos?                 @relation(fields: [asunto_id], references: [id])
+  impuesto            impuestos?               @relation(fields: [impuesto_id], references: [id])
+  gravamen            gravamenes?              @relation(fields: [gravamen_id], references: [id])
+  tasa_cambio         tasas_cambio?            @relation(fields: [tasa_cambio_id], references: [id])
+
+  pagos               pagos[]
+}
+
+model pagos {
+  id           Int                     @id @default(autoincrement())
+  cliente_id   Int
+  documento_id Int?
+  monto        Decimal                 @db.Decimal(15, 2)
+  moneda       Moneda                  @default(COP)
+  fecha_pago   DateTime                @db.Date
+  estado       EstadoPago              @default(Pendiente)
+  created_at   DateTime                @default(now())
+
+  cliente      clientes                @relation(fields: [cliente_id], references: [id])
+  documento    documentos_facturacion? @relation(fields: [documento_id], references: [id])
+}
+
+model tarifas_horarias {
+  id           Int                 @id @default(autoincrement())
+  usuario_id   Int?
+  categoria_id Int?
+  cliente_id   Int?
+  valor        Decimal             @db.Decimal(15, 2)
+  moneda       Moneda              @default(COP)
+
+  usuario      usuarios?           @relation(fields: [usuario_id], references: [id])
+  categoria    categorias_usuario? @relation(fields: [categoria_id], references: [id])
+  cliente      clientes?           @relation(fields: [cliente_id], references: [id])
+}
