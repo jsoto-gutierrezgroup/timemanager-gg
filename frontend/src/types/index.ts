@@ -243,6 +243,87 @@ export interface Tarea {
   updated_at: string;
 }
 
+// ─── Phase 3 entities ─────────────────────────────────────────────────────────
+
+export interface WipCliente extends Cliente {
+  _count?: { asuntos: number };
+}
+
+export interface WipAsunto extends Asunto {
+  horas_facturables: number;
+  valor_tiempos: number;
+  total_facturable: number;
+  count_tiempos: number;
+}
+
+export interface DocumentoFacturacion {
+  id: number;
+  tipo_documento: 'Factura' | 'NotaDebito' | 'NotaCredito' | 'Recibo' | 'Otro';
+  receptor_id: number;
+  receptor?: { id: number; razon_social: string };
+  emisor_id?: number | null;
+  emisor?: { id: number; nombre: string } | null;
+  asunto_id?: number | null;
+  asunto?: { id: number; codigo: string; nombre: string } | null;
+  rango_fecha_inicio: string;
+  rango_fecha_fin: string;
+  valor: number | string;
+  moneda: 'COP' | 'USD' | 'EUR';
+  impuesto_id?: number | null;
+  impuesto?: { id: number; nombre: string; porcentaje: number } | null;
+  gravamen_id?: number | null;
+  gravamen?: { id: number; nombre: string; valor: number } | null;
+  tasa_cambio_id?: number | null;
+  tasa_cambio?: { id: number; moneda_origen: string; moneda_destino: string; tasa: number; fecha_vigencia: string } | null;
+  estado: 'Borrador' | 'Emitido' | 'Pagado' | 'Anulado';
+  created_at: string;
+}
+
+export interface Pago {
+  id: number;
+  cliente_id: number;
+  cliente?: { id: number; razon_social: string };
+  documento_id?: number | null;
+  documento?: { id: number; tipo_documento: string } | null;
+  monto: number | string;
+  moneda: 'COP' | 'USD' | 'EUR';
+  fecha_pago: string;
+  estado: 'Pendiente' | 'Aplicado';
+  created_at: string;
+}
+
+export interface Job {
+  id: number;
+  nombre: string;
+  responsable_id?: number | null;
+  responsable?: { id: number; nombre: string } | null;
+  cliente_id?: number | null;
+  cliente?: { id: number; razon_social: string } | null;
+  tipo?: string | null;
+  estado: 'Activo' | 'Cerrado' | 'Pausado';
+  created_at: string;
+}
+
+export interface Impuesto {
+  id: number;
+  nombre: string;
+  porcentaje: number | string;
+}
+
+export interface Gravamen {
+  id: number;
+  nombre: string;
+  valor: number | string;
+}
+
+export interface TasaCambio {
+  id: number;
+  moneda_origen: string;
+  moneda_destino: string;
+  tasa: number | string;
+  fecha_vigencia: string;
+}
+
 export interface DashboardStats {
   tareasActivas: number;
   tareasFinalizadas: number;

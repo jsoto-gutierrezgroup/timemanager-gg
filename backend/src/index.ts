@@ -10,6 +10,12 @@ import asuntosRoutes from './routes/asuntos';
 import tiemposRoutes from './routes/tiempos';
 import tareasRoutes from './routes/tareas';
 import dashboardRoutes from './routes/dashboard';
+import wipRoutes from './routes/wip';
+import approvalRoutes from './routes/approval';
+import billableObjectsRoutes from './routes/billableObjects';
+import billingRoutes from './routes/billing';
+import paymentsRoutes from './routes/payments';
+import jobsRoutes from './routes/jobs';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -29,6 +35,12 @@ app.use('/api/asuntos', asuntosRoutes);
 app.use('/api/tiempos', tiemposRoutes);
 app.use('/api/tareas', tareasRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/wip', wipRoutes);
+app.use('/api/approval', approvalRoutes);
+app.use('/api/billable-objects', billableObjectsRoutes);
+app.use('/api/billing', billingRoutes);
+app.use('/api/payments', paymentsRoutes);
+app.use('/api/jobs', jobsRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

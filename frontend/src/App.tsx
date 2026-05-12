@@ -6,6 +6,12 @@ import { UsersPage } from './pages/settings/users/UsersPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { TasksPage } from './pages/tasks/TasksPage';
 import { TimesPage } from './pages/times/TimesPage';
+import { WipPage } from './pages/wip/WipPage';
+import { ApprovalPage } from './pages/billing/approval/ApprovalPage';
+import { BillableObjectsPage } from './pages/billing/billable-objects/BillableObjectsPage';
+import { InvoicesPage } from './pages/billing/invoices/InvoicesPage';
+import { PaymentsPage } from './pages/billing/payments/PaymentsPage';
+import { JobsPage } from './pages/billing/jobs/JobsPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -45,13 +51,13 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="tasks" element={<TasksPage />} />
         <Route path="times" element={<TimesPage />} />
-        <Route path="wip-management" element={<PlaceholderPage title="Gestión del WIP" />} />
-        <Route path="business-approval" element={<PlaceholderPage title="Aprobación" />} />
-        <Route path="billable-objects" element={<PlaceholderPage title="Objetos Facturables" />} />
+        <Route path="wip-management" element={<WipPage />} />
+        <Route path="business-approval" element={<ApprovalPage />} />
+        <Route path="billable-objects" element={<BillableObjectsPage />} />
         <Route path="billing-dashboard" element={<PlaceholderPage title="Dashboard de Facturación" />} />
-        <Route path="jobs" element={<PlaceholderPage title="Jobs" />} />
-        <Route path="billing/list" element={<PlaceholderPage title="Facturación" />} />
-        <Route path="payment/payments" element={<PlaceholderPage title="Pagos" />} />
+        <Route path="jobs" element={<JobsPage />} />
+        <Route path="billing/list" element={<InvoicesPage />} />
+        <Route path="payment/payments" element={<PaymentsPage />} />
         <Route path="settings/users" element={<UsersPage />} />
         <Route path="settings/clients" element={<PlaceholderPage title="Clientes" />} />
         <Route path="settings/rates" element={<PlaceholderPage title="Tarifas Horarias" />} />
