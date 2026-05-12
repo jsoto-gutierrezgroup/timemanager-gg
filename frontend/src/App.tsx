@@ -3,6 +3,9 @@ import { useAuthStore } from './store/authStore';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { UsersPage } from './pages/settings/users/UsersPage';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { TasksPage } from './pages/tasks/TasksPage';
+import { TimesPage } from './pages/times/TimesPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -39,9 +42,9 @@ export default function App() {
           </RequireAuth>
         }
       >
-        <Route index element={<Navigate to="/settings/users" replace />} />
-        <Route path="tasks" element={<PlaceholderPage title="Tareas" />} />
-        <Route path="times" element={<PlaceholderPage title="Tiempos" />} />
+        <Route index element={<DashboardPage />} />
+        <Route path="tasks" element={<TasksPage />} />
+        <Route path="times" element={<TimesPage />} />
         <Route path="wip-management" element={<PlaceholderPage title="Gestión del WIP" />} />
         <Route path="business-approval" element={<PlaceholderPage title="Aprobación" />} />
         <Route path="billable-objects" element={<PlaceholderPage title="Objetos Facturables" />} />

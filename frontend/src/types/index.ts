@@ -162,3 +162,94 @@ export interface LoginResponse {
   token: string;
   user: AuthUser;
 }
+
+// ─── Phase 2 entities ─────────────────────────────────────────────────────────
+
+export interface Cliente {
+  id: number;
+  codigo: string;
+  razon_social: string;
+  nombre_comercial?: string | null;
+  tipo_documento?: string | null;
+  numero_documento?: string | null;
+  pais?: string | null;
+  ciudad?: string | null;
+  sector?: string | null;
+  tipo?: string | null;
+  responsable_id?: number | null;
+  responsable?: { id: number; nombre: string } | null;
+  emisor_facturacion_id?: number | null;
+  emisor_facturacion?: { id: number; nombre: string } | null;
+  grupo_empresarial_id?: number | null;
+  grupo_empresarial?: { id: number; nombre: string } | null;
+  estado: 'Activo' | 'Inactivo';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Asunto {
+  id: number;
+  codigo: string;
+  cliente_id: number;
+  cliente?: { id: number; codigo: string; razon_social: string } | null;
+  nombre: string;
+  area_practica_id?: number | null;
+  area_practica?: { id: number; nombre: string } | null;
+  tipo_facturacion: 'PorHoras' | 'PorHorasConMontoEditable' | 'PorHitosOEtapas' | 'MontoFijoMensual';
+  moneda: 'COP' | 'USD' | 'EUR';
+  monto_fijo?: string | null;
+  grupo_facturacion_id?: number | null;
+  estado: 'Activo' | 'Inactivo' | 'Cerrado';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Tiempo {
+  id: number;
+  usuario_id: number;
+  usuario?: { id: number; nombre: string } | null;
+  cliente_id: number;
+  cliente?: { id: number; razon_social: string } | null;
+  asunto_id: number;
+  asunto?: { id: number; codigo: string; nombre: string } | null;
+  actividad: string;
+  fecha: string;
+  duracion_horas: number; // stored in minutes
+  facturable: boolean;
+  compartido_con?: number | null;
+  compartido_usuario?: { id: number; nombre: string } | null;
+  estado: 'Activo' | 'Aprobado' | 'Facturado' | 'FacturadoPagado';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Tarea {
+  id: number;
+  titulo: string;
+  usuario_id: number;
+  usuario?: { id: number; nombre: string } | null;
+  cliente_id: number;
+  cliente?: { id: number; razon_social: string } | null;
+  asunto_id: number;
+  asunto?: { id: number; codigo: string; nombre: string } | null;
+  detalles: string;
+  fecha_inicio?: string | null;
+  fecha_vencimiento?: string | null;
+  importancia?: 'Baja' | 'Media' | 'Alta' | null;
+  estimado_minutos: number;
+  finalizada: boolean;
+  archivada: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DashboardStats {
+  tareasActivas: number;
+  tareasFinalizadas: number;
+  totalTareas: number;
+  horasEjecutadas: number;
+  horasEstimadas: number;
+  capacidadMinutos: number;
+  topClientes: { nombre: string; minutos: number }[];
+  horasPorDia: { fecha: string; facturables: number; noFacturables: number }[];
+}

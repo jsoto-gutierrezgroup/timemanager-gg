@@ -5,6 +5,11 @@ import cors from 'cors';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import settingsRoutes from './routes/settings';
+import clientesRoutes from './routes/clientes';
+import asuntosRoutes from './routes/asuntos';
+import tiemposRoutes from './routes/tiempos';
+import tareasRoutes from './routes/tareas';
+import dashboardRoutes from './routes/dashboard';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -19,6 +24,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/clientes', clientesRoutes);
+app.use('/api/asuntos', asuntosRoutes);
+app.use('/api/tiempos', tiemposRoutes);
+app.use('/api/tareas', tareasRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
