@@ -16,6 +16,8 @@ import billableObjectsRoutes from './routes/billableObjects';
 import billingRoutes from './routes/billing';
 import paymentsRoutes from './routes/payments';
 import jobsRoutes from './routes/jobs';
+import exportRoutes from './routes/export';
+import billingDashboardRoutes from './routes/billingDashboard';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -41,6 +43,8 @@ app.use('/api/billable-objects', billableObjectsRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/jobs', jobsRoutes);
+app.use('/api/export', exportRoutes);
+app.use('/api/billing-dashboard', billingDashboardRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

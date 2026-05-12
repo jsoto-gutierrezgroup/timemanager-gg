@@ -5,11 +5,13 @@ import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
 import { Badge } from '../../components/ui/Badge';
 import { TimeModal } from './TimeModal';
+import { CalendarView } from './CalendarView';
 import { clienteService } from '../../services/clienteService';
 import { asuntoService } from '../../services/asuntoService';
 import { tiempoService } from '../../services/tiempoService';
 import { useAuthStore } from '../../store/authStore';
 import { minutesToHHMM } from '../../utils/time';
+import { downloadFile } from '../../utils/downloadFile';
 import type { Tiempo } from '../../types';
 
 const ESTADO_VARIANT: Record<string, 'success' | 'info' | 'warning' | 'default' | 'danger'> = {
@@ -30,10 +32,15 @@ function truncate(text: string, max: number) {
   return text.length > max ? text.slice(0, max) + '…' : text;
 }
 
+type ViewTab = 'lista' | 'calendario' | 'ai';
+
 export function TimesPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const isAdmin = user?.rol?.nombre === 'Administrador';
+
+  // View tab
+  const [viewTab, setViewTab] = useState<ViewTab>('lista');
 
   // Filters
   const [clienteId, setClienteId] = useState<number | null>(null);
@@ -110,6 +117,38 @@ export function TimesPage() {
 
   const totalPages = tiemposData?.pagination.totalPages ?? 1;
 
+  const currentFilters: Record<string, unknown> = {
+    cliente_id: clienteId ?? undefined,
+    asunto_id: asuntoId ?? undefined,
+    estado: estado || undefined,
+    facturable: facturable === '' ? undefined : facturable,
+    fecha_inicio: fechaInicio || undefined,
+    fecha_fin: fechaFin || undefined,
+    mostrar_todos: mostrarTodos || undefined,
+  };
+
+  const handleExportPdf = async () => {
+    try {
+      await downloadFile('/export/tiempos/pdf', 'tiempos.pdf', currentFilters);
+    } catch {
+      // silently fail
+    }
+  };
+
+  const handleExportXls = async () => {
+    try {
+      await downloadFile('/export/tiempos/xls', 'tiempos.xlsx', currentFilters);
+    } catch {
+      // silently fail
+    }
+  };
+
+  const VIEW_TABS: { id: ViewTab; label: string }[] = [
+    { id: 'lista', label: 'Lista' },
+    { id: 'calendario', label: 'Calendario' },
+    { id: 'ai', label: 'Interacciones AI' },
+  ];
+
   return (
     <div className="flex flex-col gap-5">
       {/* Header */}
@@ -117,17 +156,33 @@ export function TimesPage() {
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Tiempos</h1>
           <div className="flex gap-2 mt-1">
-            <button className="text-sm text-teal-600 font-medium border-b-2 border-teal-600 pb-0.5">
-              Lista
-            </button>
-            <button className="text-sm text-gray-400 pb-0.5">Calendario</button>
+            {VIEW_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setViewTab(tab.id)}
+                className={[
+                  'text-sm pb-0.5 font-medium',
+                  viewTab === tab.id
+                    ? 'text-teal-600 border-b-2 border-teal-600'
+                    : 'text-gray-400',
+                ].join(' ')}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 border border-gray-300 rounded-md">
+          <button
+            onClick={handleExportPdf}
+            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 border border-gray-300 rounded-md"
+          >
             PDF
           </button>
-          <button className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 border border-gray-300 rounded-md">
+          <button
+            onClick={handleExportXls}
+            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 border border-gray-300 rounded-md"
+          >
             XLS
           </button>
           <Button
@@ -141,7 +196,22 @@ export function TimesPage() {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Calendar view */}
+      {viewTab === 'calendario' && (
+        <CalendarView userId={user?.id} mostrarTodos={mostrarTodos} />
+      )}
+
+      {/* AI interactions placeholder */}
+      {viewTab === 'ai' && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-10 text-center">
+          <div className="text-4xl mb-4">🤖</div>
+          <h2 className="text-lg font-semibold text-gray-700">Historial de entradas por voz</h2>
+          <p className="text-sm text-gray-400 mt-1">Próximamente — registro de tiempos capturados mediante entrada de voz</p>
+        </div>
+      )}
+
+      {/* Filters + Table — Lista only */}
+      {viewTab === 'lista' && <>
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           <Select
@@ -338,6 +408,7 @@ export function TimesPage() {
           </div>
         )}
       </div>
+      </>}
 
       {/* Modal */}
       <TimeModal

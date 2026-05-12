@@ -13,6 +13,8 @@ import { clienteService } from '../../services/clienteService';
 import { asuntoService } from '../../services/asuntoService';
 import { tiempoService } from '../../services/tiempoService';
 import { useAuthStore } from '../../store/authStore';
+import { useVoiceInput } from '../../hooks/useVoiceInput';
+import { parseVoiceTranscript } from '../../utils/parseVoiceTranscript';
 import type { Tiempo } from '../../types';
 import { minutesToHHMM } from '../../utils/time';
 
@@ -84,6 +86,18 @@ export function TimeModal({
   });
 
   const clienteId = watch('cliente_id');
+
+  // ── Voice input ────────────────────────────────────────────────────────────
+  const { isListening, transcript, isSupported, startListening, stopListening, reset: resetVoice } = useVoiceInput('es-CO');
+
+  const handleApplyTranscript = () => {
+    const clientes = (clientesData?.data ?? []).map((c) => ({ id: c.id, razon_social: c.razon_social }));
+    const parsed = parseVoiceTranscript(transcript, clientes);
+    if (parsed.actividad) setValue('actividad', parsed.actividad);
+    if (parsed.fecha) setValue('fecha', parsed.fecha);
+    if (parsed.duracion) setValue('duracion', parsed.duracion);
+    if (parsed.facturable !== undefined) setValue('facturable', parsed.facturable);
+  };
 
   // Reset form when opening
   useEffect(() => {
@@ -207,6 +221,70 @@ export function TimeModal({
       }
     >
       <form id="time-modal-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        {/* Voice input section */}
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Entrada por voz</span>
+            {!isSupported && (
+              <span className="text-xs text-gray-400">Tu navegador no soporta entrada por voz</span>
+            )}
+          </div>
+
+          {isSupported && (
+            <div className="flex items-center gap-3">
+              {/* Mic button */}
+              <button
+                type="button"
+                onClick={isListening ? stopListening : startListening}
+                className={[
+                  'w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all flex-shrink-0',
+                  isListening
+                    ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-200'
+                    : 'bg-gray-200 text-gray-500 hover:bg-gray-300',
+                ].join(' ')}
+                title={isListening ? 'Detener' : 'Hablar'}
+              >
+                🎤
+              </button>
+
+              {/* Status / transcript */}
+              <div className="flex-1 min-w-0">
+                {isListening && (
+                  <p className="text-sm text-red-500 font-medium">Escuchando...</p>
+                )}
+                {!isListening && !transcript && (
+                  <p className="text-sm text-gray-400">Haz clic para hablar</p>
+                )}
+                {!isListening && transcript && (
+                  <p className="text-sm text-gray-700 italic truncate" title={transcript}>
+                    "{transcript}"
+                  </p>
+                )}
+              </div>
+
+              {/* Action buttons when transcript exists */}
+              {transcript && !isListening && (
+                <div className="flex gap-1 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleApplyTranscript}
+                    className="text-xs bg-teal-600 text-white px-2.5 py-1.5 rounded-md hover:bg-teal-700 font-medium"
+                  >
+                    Usar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetVoice}
+                    className="text-xs text-gray-500 border border-gray-300 px-2.5 py-1.5 rounded-md hover:bg-gray-100"
+                  >
+                    Limpiar
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Usuario */}
         <Controller
           name="usuario_id"

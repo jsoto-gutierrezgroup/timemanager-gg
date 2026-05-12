@@ -12,6 +12,7 @@ import { BillableObjectsPage } from './pages/billing/billable-objects/BillableOb
 import { InvoicesPage } from './pages/billing/invoices/InvoicesPage';
 import { PaymentsPage } from './pages/billing/payments/PaymentsPage';
 import { JobsPage } from './pages/billing/jobs/JobsPage';
+import { BillingDashboardPage } from './pages/billing/dashboard/BillingDashboardPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -54,7 +55,7 @@ export default function App() {
         <Route path="wip-management" element={<WipPage />} />
         <Route path="business-approval" element={<ApprovalPage />} />
         <Route path="billable-objects" element={<BillableObjectsPage />} />
-        <Route path="billing-dashboard" element={<PlaceholderPage title="Dashboard de Facturación" />} />
+        <Route path="billing-dashboard" element={<BillingDashboardPage />} />
         <Route path="jobs" element={<JobsPage />} />
         <Route path="billing/list" element={<InvoicesPage />} />
         <Route path="payment/payments" element={<PaymentsPage />} />
