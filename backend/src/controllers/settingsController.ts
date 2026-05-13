@@ -25,7 +25,7 @@ export async function createRole(req: AuthRequest, res: Response, next: NextFunc
     const body = roleSchema.parse(req.body);
     const existing = await prisma.roles.findUnique({ where: { nombre: body.nombre } });
     if (existing) throw new AppError('Ya existe un rol con ese nombre', 400);
-    const role = await prisma.roles.create({ data: { nombre: body.nombre, permisos: body.permisos } });
+    const role = await prisma.roles.create({ data: { nombre: body.nombre, permisos: body.permisos as object } });
     res.status(201).json(role);
   } catch (err) { next(err); }
 }
@@ -35,7 +35,7 @@ export async function updateRole(req: AuthRequest, res: Response, next: NextFunc
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) throw new AppError('ID inválido', 400);
     const body = roleSchema.partial().parse(req.body);
-    const role = await prisma.roles.update({ where: { id }, data: body });
+    const role = await prisma.roles.update({ where: { id }, data: { ...body, permisos: body.permisos as object | undefined } });
     res.json(role);
   } catch (err) { next(err); }
 }
