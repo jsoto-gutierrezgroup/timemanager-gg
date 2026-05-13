@@ -35,7 +35,13 @@ export async function updateRole(req: AuthRequest, res: Response, next: NextFunc
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) throw new AppError('ID inválido', 400);
     const body = roleSchema.partial().parse(req.body);
-    const role = await prisma.roles.update({ where: { id }, data: { ...body, permisos: body.permisos as object | undefined } });
+    const role = await prisma.roles.update({
+      where: { id },
+      data: {
+        nombre: body.nombre,
+        ...(body.permisos !== undefined && { permisos: body.permisos as object }),
+      },
+    });
     res.json(role);
   } catch (err) { next(err); }
 }

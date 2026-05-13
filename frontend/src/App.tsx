@@ -3,6 +3,8 @@ import { useAuthStore } from './store/authStore';
 import { Layout } from './components/layout/Layout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { UsersPage } from './pages/settings/users/UsersPage';
+import { ClientesPage } from './pages/settings/clients/ClientesPage';
+import { TarifasPage } from './pages/settings/rates/TarifasPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { TasksPage } from './pages/tasks/TasksPage';
 import { TimesPage } from './pages/times/TimesPage';
@@ -60,8 +62,8 @@ export default function App() {
         <Route path="billing/list" element={<InvoicesPage />} />
         <Route path="payment/payments" element={<PaymentsPage />} />
         <Route path="settings/users" element={<UsersPage />} />
-        <Route path="settings/clients" element={<PlaceholderPage title="Clientes" />} />
-        <Route path="settings/rates" element={<PlaceholderPage title="Tarifas Horarias" />} />
+        <Route path="settings/clients" element={<ClientesPage />} />
+        <Route path="settings/rates" element={<TarifasPage />} />
         <Route path="settings/periods" element={<PlaceholderPage title="Períodos de Facturación" />} />
         <Route path="settings/exchange-rates" element={<PlaceholderPage title="Tasas de Cambio" />} />
       </Route>
