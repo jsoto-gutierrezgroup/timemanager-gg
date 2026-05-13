@@ -18,6 +18,7 @@ import paymentsRoutes from './routes/payments';
 import jobsRoutes from './routes/jobs';
 import exportRoutes from './routes/export';
 import billingDashboardRoutes from './routes/billingDashboard';
+import tarifasRoutes from './routes/tarifas';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/billing-dashboard', billingDashboardRoutes);
+app.use('/api/tarifas', tarifasRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
